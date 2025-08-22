@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Upload, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { pdfjs } from 'react-pdf';
 
 interface Hotspot {
   id: string;
@@ -20,6 +21,9 @@ interface AdminPanelProps {
   onBack: () => void;
 }
 
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
 const AdminPanel = ({ onBack }: AdminPanelProps) => {
   const [sketchImage, setSketchImage] = useState<string | null>(null);
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
@@ -32,10 +36,32 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const convertPdfToImage = useCallback(async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+    const page = await pdf.getPage(1); // Get first page
+    
+    const scale = 2; // Higher scale for better quality
+    const viewport = page.getViewport({ scale });
+    
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d')!;
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+    
+    await page.render({
+      canvasContext: context,
+      viewport: viewport
+    }).promise;
+    
+    return canvas.toDataURL('image/png');
+  }, []);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+      if (file.type.startsWith('image/')) {
+        // Handle image files
         const reader = new FileReader();
         reader.onload = (e) => {
           setSketchImage(e.target?.result as string);
@@ -43,6 +69,18 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
           toast.success("שרטוט הועלה בהצלחה!");
         };
         reader.readAsDataURL(file);
+      } else if (file.type === 'application/pdf') {
+        // Handle PDF files
+        try {
+          toast.loading("מעבד קובץ PDF...");
+          const imageUrl = await convertPdfToImage(file);
+          setSketchImage(imageUrl);
+          setHotspots([]);
+          toast.success("שרטוט PDF הומר לתמונה בהצלחה!");
+        } catch (error) {
+          console.error('Error converting PDF:', error);
+          toast.error("שגיאה בהמרת קובץ ה-PDF");
+        }
       } else {
         toast.error("יש להעלות קובץ PDF או תמונה בלבד");
       }
