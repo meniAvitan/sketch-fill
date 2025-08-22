@@ -120,14 +120,24 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
                   accept="image/*,.pdf"
                   onChange={handleFileUpload}
                   className="hidden"
+                  id="file-upload"
                 />
-                <Button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  בחר קובץ
-                </Button>
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <Button 
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full hover:bg-primary/90 transition-colors"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    בחר קובץ PDF או תמונה
+                  </Button>
+                </label>
+                {sketchImage && (
+                  <p className="text-sm text-success mt-2">✓ קובץ הועלה בהצלחה</p>
+                )}
               </CardContent>
             </Card>
 
@@ -154,10 +164,10 @@ const AdminPanel = ({ onBack }: AdminPanelProps) => {
                       setNewHotspot(prev => ({ ...prev, fieldType: value }))
                     }
                   >
-                    <SelectTrigger>
-                      <SelectValue />
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="בחר סוג שדה" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-popover border border-border shadow-md z-50">
                       <SelectItem value="text">טקסט חופשי</SelectItem>
                       <SelectItem value="number">מספר</SelectItem>
                       <SelectItem value="select">בחירה מרשימה</SelectItem>

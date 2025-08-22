@@ -248,10 +248,10 @@ const WorkerView = ({ onBack }: WorkerViewProps) => {
               <Label htmlFor="value">ערך</Label>
               {selectedHotspot?.fieldType === "select" ? (
                 <Select value={currentValue} onValueChange={setCurrentValue}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background">
                     <SelectValue placeholder="בחר אפשרות" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-popover border border-border shadow-md z-50">
                     {selectedHotspot.options?.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
