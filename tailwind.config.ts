@@ -52,6 +52,15 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				sketch: {
+					overlay: 'hsl(var(--sketch-overlay))',
+				},
+				hotspot: {
+					DEFAULT: 'hsl(var(--hotspot))',
+					hover: 'hsl(var(--hotspot-hover))',
+				},
+				success: 'hsl(var(--success))',
+				warning: 'hsl(var(--warning))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
